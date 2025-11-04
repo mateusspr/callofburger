@@ -1,0 +1,77 @@
+// Prisma schema for CallOfBurger
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  address     String
+  phone       String
+  products    Product[]
+  categories  Category[]
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  restaurant  Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  products    Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  image       String
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  restaurant  Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  available   Boolean  @default(true)
+  orderItems  OrderItem[] 
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String   @unique
+  orders      Order[]
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  customer    Customer @relation(fields: [customerId], references: [id])
+  customerId  String
+  restaurant  Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  items       OrderItem[]
+  status      String
+  total       Float
+  paymentId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Float
+}
